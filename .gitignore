@@ -21,4 +21,9 @@
 /yarn-error.log
 
 .byebug_history
+
+# Ignore vim .swp
 .swp
+
+# Ignore Spring files.
+/spring/*.pid
