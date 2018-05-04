@@ -23,7 +23,7 @@
 .byebug_history
 
 # Ignore vim .swp
-.swp
+*.swp
 
 # Ignore Spring files.
 /spring/*.pid
