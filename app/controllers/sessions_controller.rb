@@ -5,9 +5,11 @@ class SessionsController < ApplicationController
 
   # POST /login
   def create
-    @user = User.find_by(email: params[:session][:email])
-    if @user && @user.authenticate(params[:session][:password])
+    user = User.find_by(email: params[:session][:email])
+    if user && user.authenticate(params[:session][:password])
       # Success
+      log_in user
+      redirect_to user
     else
       # Failure email or password not collect
       flash.now[:danger] = 'Invalied email/password combination'
