@@ -24,6 +24,22 @@ class UsersController < ApplicationController
     end
   end
 
+  # GET /users/:id
+  def edit
+    @user = User.find(params[:id])
+  end
+  # => app/views/users/edit.html.erb
+
+  def update
+    @user = User.find(params[:id])
+    if @user.update_attributes(user_params)
+      # Success
+    else
+      # Failure
+      render 'edit'
+    end
+  end
+
   private
 
   def user_params
