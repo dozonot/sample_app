@@ -9,6 +9,7 @@ class SessionsController < ApplicationController
     if user && user.authenticate(params[:session][:password])
       # Success
       log_in user
+      remember user # SessionsHelperで定義されたremember
       redirect_to user
     else
       # Failure email or password not collect
