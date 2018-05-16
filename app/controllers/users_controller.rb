@@ -1,5 +1,7 @@
 class UsersController < ApplicationController
+  # before_action は上から順に実行される
   before_action :logged_in_user, only: [:edit, :update]
+  before_action :correct_user,   only: [:edit, :update]
 
   # GET /users/:id
   def show
@@ -52,9 +54,19 @@ class UsersController < ApplicationController
 
     def logged_in_user
       if not logged_in?
+        # GET   /users/:id/edit
+        # PATCH /users/:id
+        store_location
         flash[:danger] = "Please log in."
         redirect_to login_url
       end
+    end
+
+    def correct_user
+      # GET   /users/:id/edit
+      # PATCH /users/:id
+      @user = User.find(params[:id])
+      redirect_to(root_url) unless current_user?(@user)
     end
 
 end
