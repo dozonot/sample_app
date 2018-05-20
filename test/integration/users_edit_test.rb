@@ -2,34 +2,30 @@ require 'test_helper'
 class UsersEditTest < ActionDispatch::IntegrationTest
 
   def setup
-    @user = users(:michael)
+    @admin     = users(:michael)
+    @non_admin = users(:archer)
   end
 
-  test "unsuccessful edit" do
-    log_in_as(@user)
-    get edit_user_path(@user)
-    assert_template 'users/edit'
-    patch user_path(@user), params: { user: { name: "",
-                                              email: "foo@invalied",
-					      password: "foo",
-					      password_confirmation: "bar" } }
-    assert_template 'users/edit'
+  test "index as admin including pagination and delete links" do
+    log_in_as(@admin)
+    get users_path
+    assert_template 'users/index'
+    assert_select 'div.pagination'
+    first_page_of_users = User.paginate(page: 1)
+    first_page_of_users.each do |user|
+      assert_select 'a[href=?]', user_path(user), text: user.name
+      unless user == @admin
+        assert_select 'a[href=?]', user_path(user), text: 'delete'
+      end
+    end
+    assert_difference 'User.count', -1 do
+      delete user_path(@non_admin)
+    end
   end
 
-  test "successful edit with friendly forwarding" do
-    get edit_user_path(@user)
-    log_in_as(@user)
-    assert_redirected_to edit_user_url(@user)
-    name = "Foo Bar"
-    email = "foo@bar.com"
-    patch user_path(@user), params: { user: { name: name,
-                                              email: email,
-					      password: "",
-					      password_confirmation: "" } }
-    assert_not flash.empty?
-    assert_redirected_to @user
-    @user.reload
-    assert_equal name,  @user.name
-    assert_equal email, @user.email
+  test "index as non-admin" do
+    log_in_as(@non_admin)
+    get users_path
+    assert_select 'a', text: 'delete', count: 0
   end
 end
