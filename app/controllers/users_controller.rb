@@ -1,7 +1,12 @@
 class UsersController < ApplicationController
   # before_action は上から順に実行される
-  before_action :logged_in_user, only: [:edit, :update]
+  before_action :logged_in_user, only: [:index, :edit, :update]
   before_action :correct_user,   only: [:edit, :update]
+
+  def index
+    # @users = User.paginate(page: 1)
+    @users = User.paginate(page: params[:page])
+  end
 
   # GET /users/:id
   def show
