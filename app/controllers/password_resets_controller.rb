@@ -1,4 +1,7 @@
 class PasswordResetsController < ApplicationController
+  before_action :get_user,         only: [:edit, :update]
+  before_action :valid_user,       only: [:edit, :update]
+  before_action :check_expiration, only: [:edit, :update]
 
   # GET /password_resets/new
   def new
@@ -22,11 +25,44 @@ class PasswordResetsController < ApplicationController
 
   # GET /password_resets/:id/edit
   def edit
-    # パスワードを入力してもらうフォームを描画
   end
 
-  # PATCH /password/:id
+  # PATCH /password/:id?email=foo@bar.com
   def update
-    # パスワードを再設定する
+    if params[:user][:password].empty?
+      @user.errors.add(:password, :blank)
+      render 'edit'
+    elsif @user.update_attributes(user_params)
+      log_in @user
+      flash[:success] = "Password has been reset."
+      redirect_to @user
+    else
+      render 'edit'
+    end
   end
+
+  private 
+    
+    def user_params
+      params.require(:user).permit(:password, :password_confirmation)
+    end
+
+    def get_user
+      @user = User.find_by(email: params[:email])
+    end
+
+    def valid_user
+      if not (@user && @user.activated? &&
+              @user.authenticated?(:reset, params[:id]))
+	flash[:info] = "Invalid password reset link."
+	redirect_to root_url
+      end
+    end
+
+    def check_expiration
+      if @user.password_reset_expired?
+        flash[:danger] = "Password reset has expired."
+	redirect_to new_password_reset_url
+      end
+    end
 end
